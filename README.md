@@ -1,4 +1,4 @@
-Distributed Systems Lab 1
+Distributed Systems Lab 2
 
 Name: Vansh Jain
 
