@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+// Code From Vansh Jain
+// DS Lab 3
+// SBU ID - 116713519
+
+option go_package = "./";
+
+package proto;
+
+service BankingService {
+  rpc TransferMoney(TransferRequest) returns (TransactionResponse) {}
+  rpc SyncServerStatus(ServerStatus) returns(Empty){}
+  rpc TransferMoneyResponse(Reply) returns (Empty){}
+
+  rpc Prepare(PrepareMessage) returns (PromiseMessage);
+  rpc Accept(AcceptMessage) returns (AcceptedMessage);
+  rpc Decide(CommitMessage) returns (Empty) {};
+  rpc Catchup(CatchupMessage) returns (SyncedResponse){};
+
+
+  rpc PCCommit(PCCommitMessage) returns (PCResponse);
+  rpc PCAbort(PCAbortMessage) returns (PCResponse);
+
+  rpc PrintBalance(printBalanceRequest) returns(PrintBalanceResponse){}
+  rpc PrintLog(Empty) returns(PrintLogResponse){}
+  rpc PrintPerformance(Empty) returns(PrintPerformanceResponse){}
+
+
+}
+
+message Empty{
+}
+
+message ServerStatus{
+  repeated int64 server_status=1;
+}
+
+message Reply {
+  int32 view = 1;
+  int32 viewLeader = 2;
+  int64 timestamp = 3;
+  string clientId= 4;
+  int32 serverId = 5;
+  bool result = 6;
+}
+
+message Transaction {
+  int64 timestamp = 1;
+  int32 sender = 2;
+  int32 receiver = 3;
+  float amount = 4;
+  bool result = 5;
+}
+
+message TransferRequest {
+  Transaction txn = 1;
+}
+
+
+message TransactionResponse {
+  string message = 1;
+  bool success = 2;
+}
+
+
+//PAXOS
+
+message PrepareMessage {
+  int64 ballot_num = 1;
+  int32 len_commited_seq_nums = 2;
+  int32 sender_id=3;
+}
+
+message PromiseMessage {
+  bool ack =1;
+  int64 n = 2;
+  int64 acceptNum = 3;
+  int32 len_commited_seq_nums = 4;
+  Transaction acceptVal = 5;
+  int32 sender_id = 6;
+}
+
+message AcceptMessage {
+  int64 n = 1;
+  Transaction proposedTxn = 3;
+}
+
+message AcceptedMessage {
+  bool ack = 1;
+  int64 n = 2;
+  Transaction proposedTxn = 3;
+}
+
+message CommitMessage {
+  int64 n = 1;
+}
+
+message CatchupMessage {
+  int64 len_commited_txn = 1;
+}
+
+message SyncedResponse{
+  string isSynced = 1;
+  map<int32,Transaction> commitedTxn = 2;
+  int64 ballot_num=3;
+}
+
+
+//2PC 
+
+message PCCommitMessage{
+  int32 txnCorresponding=1;
+}
+message PCAbortMessage{
+  int32 txnCorresponding=1;
+}
+message PCResponse{
+  bool ack =1;
+}
+
+
+//Print functions
+message printBalanceRequest{
+  int32 clientId = 1;
+}
+message PrintBalanceResponse{
+  int64 balance=1;
+}
+message PrintLogResponse{
+  repeated execTxn logs=1;
+}
+message execTxn  {
+	int32 TxID =1;
+	Transaction  txn = 2;
+	string Status =3;
+}
+
+message PrintPerformanceResponse{
+  int64 total_transactions=1;
+  float total_latency=2;
+}
